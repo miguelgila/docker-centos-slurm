@@ -106,7 +106,7 @@ RUN cd /root && \
     cd slurm-${SLURM_VERSION} && \
     cd .. && \
     tar cjf slurm-${SLURM_VERSION}.tar.bz2 slurm-${SLURM_VERSION} && \
-    rpmbuild --define -ta slurm-${SLURM_VERSION}.tar.bz2
+    rpmbuild -ta slurm-${SLURM_VERSION}.tar.bz2
 
 # Install Slurm rpms
 RUN yum localinstall -y /root/rpmbuild/RPMS/$(uname -m)/slurm-*${SLURM_VERSION}*
