@@ -21,18 +21,6 @@ RUN yum install -y man2html-core
 # IPMI Energy Consumption
 RUN yum install -y freeipmi freeipmi-devel
 
-# Infiniband Accounting
-{% if base.infiniband == 'ofed' %}
-RUN yum install -y libibmad libibmad-devel libibumad libibumad-devel
-{% elif base.infiniband == 'mofed' %}
-RUN yum install -y gtk2 atk cairo gcc-gfortran tcsh lsof ethtool tcl tk
-COPY ./MLNX_OFED_LINUX-4.7-1.0.0.1-rhel7.7-x86_64.tgz /tmp/.
-RUN cd /tmp && \
-    tar xzf MLNX_OFED_LINUX-4.7-1.0.0.1-rhel7.7-x86_64.tgz && \
-    cd MLNX_OFED_LINUX-4.7-1.0.0.1-rhel7.7-x86_64 && \
-    ./mlnxofedinstall --force --without-fw-update --with-nvmf --user-space-only
-{% endif %}
-
 # Lua Support
 RUN yum install -y lua lua-devel
 
@@ -77,37 +65,6 @@ RUN yum install -y git
 
 RUN yum groupinstall -y "Development Tools"
 
-RUN mkdir /root/pmix
-
-RUN mkdir /opt/pmix
-
-# PMIx {{ pmix.v1 }}
-RUN git clone https://github.com/pmix/pmix.git /root/pmix/{{ pmix.v1 }} && \
-    cd /root/pmix/{{ pmix.v1 }} && \
-    git checkout {{ pmix.v1 }} && \
-    ./autogen.sh && \
-    ./configure --prefix=/opt/pmix/{{ pmix.v1 }} && \
-    make -j install
-
-# PMIx {{ pmix.v2 }}
-RUN git clone https://github.com/pmix/pmix.git /root/pmix/{{ pmix.v2 }} && \
-    cd /root/pmix/{{ pmix.v2 }} && \
-    git checkout {{ pmix.v2 }} && \
-    ./autogen.sh && \
-    ./configure --prefix=/opt/pmix/{{ pmix.v2 }} && \
-    make -j install
-
-# PMIx {{ pmix.v3 }}
-RUN git clone https://github.com/pmix/pmix.git /root/pmix/{{ pmix.v3 }} && \
-    cd /root/pmix/{{ pmix.v3 }} && \
-    git checkout {{ pmix.v3 }} && \
-    ./autogen.sh && \
-    ./configure --prefix=/opt/pmix/{{ pmix.v3 }} && \
-    make -j install
-
-# Only for Slurm rpmbuild
-RUN yum install -y pmix
-
 #########
 # munge #
 #########
@@ -149,12 +106,18 @@ RUN cd /root && \
     cd slurm-${SLURM_VERSION} && \
     cd .. && \
     tar cjf slurm-${SLURM_VERSION}.tar.bz2 slurm-${SLURM_VERSION} && \
-    rpmbuild --define '_with_pmix --with-pmix=/opt/pmix/{{ pmix.v1 }}:/opt/pmix/{{ pmix.v2 }}:/opt/pmix/{{ pmix.v3 }}' -ta slurm-${SLURM_VERSION}.tar.bz2
+    rpmbuild --define -ta slurm-${SLURM_VERSION}.tar.bz2
 
 # Install Slurm rpms
 RUN yum localinstall -y /root/rpmbuild/RPMS/$(uname -m)/slurm-*${SLURM_VERSION}*
 
 RUN yum install -y supervisor
+
+########
+#  GO  #
+########
+RUN yum install -y golang golang-godoc golang-vet golang-src golang-pkg-linux-amd64
+
 
 # Entrypoint script
 COPY docker-entrypoint.sh /docker-entrypoint.sh
