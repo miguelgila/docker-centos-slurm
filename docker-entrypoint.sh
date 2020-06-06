@@ -135,7 +135,7 @@ ProctrackType=proctrack/pgid
 #FirstJobId=
 ReturnToService=0
 #MaxJobCount=
-#PlugStackConfig=
+PlugStackConfig=/etc/slurm/plugstack.conf
 #PropagatePrioProcess=
 #PropagateResourceLimits=
 #PropagateResourceLimitsExcept=
@@ -174,9 +174,9 @@ SlurmdParameters=config_overrides
 #PriorityMaxAge=1-0
 #
 # LOGGING
-SlurmctldDebug=3
+SlurmctldDebug=4
 SlurmctldLogFile=/var/log/slurm/slurmctld.log
-SlurmdDebug=3
+SlurmdDebug=4
 SlurmdLogFile=/var/log/slurm/slurmd.log
 JobCompType=jobcomp/none
 #JobCompLoc=
@@ -204,6 +204,7 @@ EOF
 
 _enable_slurmctld() {
   _create_slurm_config
+  _create_slurm_plugstack_config
   cat <<EOF | tee /etc/supervisord.d/slurmctld.ini
 [program:slurmctld]
 command=/usr/sbin/slurmctld -D
@@ -224,6 +225,19 @@ priority=30
 autostart=true
 autorestart=true
 EOF
+}
+
+_create_slurm_plugstack_config() {
+  if [ ! -f /etc/slurm/plugstack.conf ]; then
+    cat <<EOF | tee /etc/slurm/plugstack.conf
+#
+# SPANK config file
+#
+# required|optional  path_to_plugin                      args
+#
+include plugstack.conf.d/*
+EOF
+  fi
 }
 
 if [[ "${MUNGED_ENABLED}" == "true" ]]; then
