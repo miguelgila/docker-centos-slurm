@@ -51,4 +51,10 @@ sinfo
 docker-compose down
 ```
 
+## Delete previous volumes
 
+If you change volume paths, this can be used to remove old volumes:
+
+```
+docker volume rm $(docker volume list |grep docker-centos- | awk '{print $2}')
+```
