@@ -39,25 +39,25 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: "${PWD}/var_lib_mysql"
+      device: "{{ env("PWD") }}/var_lib_mysql"
   etc_munge:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: "${PWD}/etc_munge"
+      device: "{{ env("PWD") }}/etc_munge"
   etc_slurm:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: "${PWD}/etc_slurm"
+      device: "{{ env("PWD") }}/etc_slurm"
   shared:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: "${PWD}/shared"
+      device: "{{ env("PWD") }}/shared"
 
 networks:
   slurm:
